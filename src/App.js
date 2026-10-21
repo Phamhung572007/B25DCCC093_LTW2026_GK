@@ -17,6 +17,21 @@ const App = () => {
 
   useEffect(() => {
     const controller = new AbortController();
+    const savedEvents = localStorage.getItem('gk_events');
+
+    if (savedEvents !== null) {
+      try {
+        const parsedEvents = JSON.parse(savedEvents);
+
+        if (Array.isArray(parsedEvents)) {
+          setEvents(parsedEvents);
+          setLoading(false);
+          return () => controller.abort();
+        }
+      } catch {}
+
+      localStorage.removeItem('gk_events');
+    }
 
     axios.get('/data/events.json', { signal: controller.signal })
       .then(({ data }) => {
@@ -34,6 +49,12 @@ const App = () => {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!loading && !error) {
+      localStorage.setItem('gk_events', JSON.stringify(events));
+    }
+  }, [events, loading, error]);
 
   const handleAddEvent = (eventData) => {
     setEvents((currentEvents) => {
@@ -62,7 +83,7 @@ const App = () => {
     <div className="app-shell" data-build-tag={BUILD_TAG}>
       <Routes>
         <Route element={<Layout loading={loading} error={error} />}>
-          <Route index element={<Home />} />
+          <Route index element={<Home events={events} />} />
           <Route
             path="events"
             element={(
@@ -75,7 +96,7 @@ const App = () => {
           />
           <Route path="events/new" element={<AddEvent onAddEvent={handleAddEvent} />} />
           <Route path="events/:id" element={<EventDetail events={events} />} />
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<Home events={events} />} />
         </Route>
       </Routes>
     </div>

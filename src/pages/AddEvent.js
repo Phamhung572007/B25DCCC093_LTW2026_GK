@@ -26,11 +26,17 @@ const AddEvent = ({ onAddEvent }) => {
       return;
     }
 
+    const capacity = Number(form.capacity);
+    if (!Number.isInteger(capacity) || capacity < 10 || capacity > 1000) {
+      setError('Sức chứa phải từ 10 đến 1000');
+      return;
+    }
+
     onAddEvent({
       name: form.name.trim(),
       location: form.location.trim(),
       date: form.date,
-      capacity: Number(form.capacity),
+      capacity,
     });
     setError('');
     setForm(initialForm);
@@ -86,17 +92,18 @@ const AddEvent = ({ onAddEvent }) => {
               id="event-capacity"
               name="capacity"
               type="number"
+              step="any"
               value={form.capacity}
               onChange={handleChange}
               placeholder="Ví dụ: 100"
             />
           </div>
         </div>
-        {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-footer">
           <button className="button button-primary" type="submit">Thêm</button>
         </div>
       </form>
+      {error && <p className="form-error" role="alert">{error}</p>}
     </section>
   );
 };
